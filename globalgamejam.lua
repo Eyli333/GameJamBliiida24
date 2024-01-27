@@ -76,8 +76,6 @@ player2 = {}
   --music(0)
 end 
 
-local cooldown = 0
-
 
 function _update()
   move_player() -- le dれたplacement de player
@@ -89,8 +87,10 @@ function _update()
   update_boutons()
   --update_enemis()
  -- collision_player_enemis()
-  if cooldown > 0 then
-    cooldown = cooldown - 1
+  for i, b in ipairs(boutons) do
+    if b.cooldown > 0 then
+      b.cooldown = b.cooldown - 1
+    end
   end
 end
 
@@ -628,6 +628,7 @@ function faire_un_bouton(x, y, id)
     bouton.h = 8 -- hauteur 
     bouton.active = false
     bouton.spr = 7 -- pour essayer avant de faire des animations
+    bouton.cooldown = 0
   add(boutons,bouton)
 end
 
@@ -655,20 +656,21 @@ function update_action_bouton(b)
   if (b.id == 1) then
     faire_un_bouton(14*8, 11*8, 2)
     collision_player_boutons(player)
-    bouton_colldown(1, 1)
+    bouton_cooldown(1, b)
+  end
+  if (b.id == 2) then
+    collision_player_boutons(player)
+    bouton_cooldown(1, b)
   end
 end
 
-function bouton_colldown(time, id) --time en secondes, id du bouton
-  if cooldown <= 0 then
-    cooldown = time * 30
-    for b in all(boutons) do 
-      if b.id == id then
-        b.active = false
-      end
-    end
+function bouton_cooldown(time, b) --time en secondes, b = bouton 
+  if b.cooldown <= 0 then
+    b.cooldown =  time * 30
+    b.active = false    
   end
 end
+
 -- placer les objets sur la map
 -- flag : le numれたro du flag
 -- x_min,x_max : en tiles, la zone de la map sur laquelle la fonction va agir
