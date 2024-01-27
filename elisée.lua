@@ -6,7 +6,7 @@
 
 function _init() -- nouveau
   game_state = "game" -- nouveau
-  level = 3
+  level = 4
   boot()
 end
 
@@ -346,6 +346,15 @@ function spawn_level()
     btn()
 
     faire_un_bouton(46,3,1001) -- arguments : x,y,id
+
+  elseif level == 4 then
+    player.x = 17*8*(level-1) -2*8 --deux bloc plus à gauche que d'habitude
+    player.y = 6*8
+    player2.x = 17*8*(level-1) -2*8 --deux bloc plus à gauche que d'habitude
+    player2.y = 14*8
+    faire_un_bouton(51,03,2001)
+    faire_un_bouton(55,02,2003)
+    faire_un_bouton(51,08,2002)
     -- faire_un_bouton(30,3,302) -- arguments : x,y,id
   end
 end
@@ -439,7 +448,7 @@ function collision_map(a)
   
   -- verification des collisions en y
   a.dy += gravite -- on applique sur la direction en y du player la gravite 
-  if a.dy > 8 then a.dy = 8 end -- on bloque la vitesse de chute du personnage pour れたviter de traverser les murs si on chute de trop haut
+  if a.dy > 7 then a.dy = 7 end -- on bloque la vitesse de chute du personnage pour れたviter de traverser les murs si on chute de trop haut
   a.y += a.dy -- on ajoute la valeur dy au deplacement en y du joueur 
 
   local vertical_collision = mget((a.x+4)/8,(a.y+8)/8) -- verifie la tile en dessous de player
@@ -982,8 +991,8 @@ function update_action_bouton(b)
     if not b.input then 
       faire_un_bouton(1,4,103)
       open_porte_player1()
+    end
   end
-end
   if (b.id == 103) then
     if not b.input then 
       open_porte_player2()
@@ -1010,13 +1019,13 @@ end
       open_porte_player2()
     end
   end
-  --=======lvl Élisée Elisee=======--
+  --=======lvl Élisée Elisee 1=======--
   if (b.id == 1001) then
     if not b.input then 
       faire_un_bouton(33,08,1002, false)
       mettredudecor(16,33, 09, 1, "h")
-      faire_une_scie(33,08,1,3)
-      faire_une_scie(36,08,1,3)
+      faire_une_scie(57,01,1,1)
+      faire_une_scie(53,07,1,1)
       faire_une_scie(40,08,1,3)
       faire_une_scie(40,10,1,3)
       placer_des_piques(42,06,2)
@@ -1031,7 +1040,38 @@ end
       open_porte_player2()
     end
   end
+  faire_un_bouton(55,02,2003)
+  faire_un_bouton(51,08,2002)
+  --=======lvl Élisée Elisee 2=======--
+  if (b.id == 2001) then
+    if not b.input then 
+      -- mettredudecor(16,33, 09, 1, "h")
+      -- faire_un_bouton(50,04,2003)
+      faire_une_scie(51,01,1,1)
+      
+      -- faire_une_scie(40,08,1,3)
+      -- faire_une_scie(40,10,1,3)
+      -- placer_des_piques(42,06,2)
+      -- changementDesCommandes = true
+    end
+  end
+  if (b.id == 2002) then
+    if not b.input then  
+      faire_une_scie(53,08,1,2)
+
+    end
+  end
+  if (b.id == 2003) then
+    if not b.input then  
+      faire_un_bouton(17,4,2005)
+      faire_une_scie(53,08,1,2)
+      
+      -- open_porte_player1()
+      -- open_porte_player2()
+    end
+  end
 end
+
 
 
 
