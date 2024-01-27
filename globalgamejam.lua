@@ -67,11 +67,16 @@ player2 = {}
   enemis = {}
   placer_des_boutons(1,0,31,0,31)
   --placer_des_enemis(2,0,31,0,31)
+
+  faire_un_bouton(14*8, 02*8, 1)
+
   desintegration = {}
 
   -- lancement de la musique du jeu
   --music(0)
 end 
+
+local cooldown = 0
 
 
 function _update()
@@ -84,6 +89,9 @@ function _update()
   update_boutons()
   --update_enemis()
  -- collision_player_enemis()
+  if cooldown > 0 then
+    cooldown = cooldown - 1
+  end
 end
 
 
@@ -611,8 +619,9 @@ end
 -- creer des objets a ramasser sur la map
 -- a declarer en _init() : objets={} -- ne pas oublier de creer le tableau
 
-function faire_un_bouton(x,y)
+function faire_un_bouton(x, y, id)
   local bouton = {}
+    bouton.id = id
     bouton.x = x 
     bouton.y = y
     bouton.l = 8 -- largeur 
@@ -634,6 +643,7 @@ function update_boutons()
   for b in all(boutons) do 
     if b.active then 
       b.spr = 8 
+      update_action_bouton(b) --changement
     else
       b.spr = 7
     end
@@ -641,6 +651,24 @@ function update_boutons()
 end
 
 
+function update_action_bouton(b)
+  if (b.id == 1) then
+    faire_un_bouton(14*8, 11*8, 2)
+    collision_player_boutons(player)
+    bouton_colldown(1, 1)
+  end
+end
+
+function bouton_colldown(time, id) --time en secondes, id du bouton
+  if cooldown <= 0 then
+    cooldown = time * 30
+    for b in all(boutons) do 
+      if b.id == id then
+        b.active = false
+      end
+    end
+  end
+end
 -- placer les objets sur la map
 -- flag : le numれたro du flag
 -- x_min,x_max : en tiles, la zone de la map sur laquelle la fonction va agir
