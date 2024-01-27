@@ -1,6 +1,6 @@
---pico-8 cartridge // http://www.pico-8.com
---version 41
---__lua__
+-- pico-8 cartridge // http://www.pico-8.com
+-- version 41
+-- __lua__
 -- cooperative la revanche
 -- code pour les ateliers creation de jeux video
 
@@ -8,8 +8,8 @@ function _init()
   
 player = {}
   -- position sur l'れたcran
-  player.x = 32 -- position en x du joueur (ici au milieu de l'ecran)
-  player.y = 32  -- position en y du joueur (ici au milieu de l'ecran)
+  player.x = 64  -- position en x du joueur (ici au milieu de l'ecran)
+  player.y = 64  -- position en y du joueur (ici au milieu de l'ecran)
   -- largeur et hauteur du personnage pour les collisions notamment
   player.l =  8 -- largeur du joueur en pixels ou en tiles (ici 8 pixels) 
   player.h =  8 -- hauteur du joueur en pixels ou en tiles (ici 8 pixels)
@@ -23,7 +23,6 @@ player = {}
   player.saut = 8 -- hauteur du saut (valeur positive)
   player.isgrounded = false -- interrupteur qui permet de savoir si le personnage touche le sol, false = le personnage ne touche pas le sol, true = le personnage touche le sol
   -- animations du personnage
-  player.spr = 1-- sprite de base du joueur (ici le numero 1 de l'editeur de sprite )
   player.god = false -- interrupteur qui flip le sprite sur l'axe vertical, si god = false alors le sprite apparaれなtra れき l'れたcran tel qu'il est dessinれた dans l'れたditeur de sptite, god = false il sera invers&
   player.anim = "nothing"-- animation en cours d'utilisation
   player.nothing =  {f=1,st=1,sz=1,var=0,spd=1/15}-- animation pour la marche
@@ -32,12 +31,12 @@ player = {}
   -- gestion du personnage (selon le gamplay)
   player.life = 1 -- points de vie du personnage au debut du jeu
   player.munitions = 1-- munitions du personnage
-
+  
 --changement
 player2 = {}
   -- position sur l'れたcran
   player2.x = 56  -- position en x du joueur (ici au milieu de l'ecran)
-  player2.y = 56  -- position en y du joueur (ici au milieu de l'ecran)
+  player2.y = 8  -- position en y du joueur (ici au milieu de l'ecran)
   -- largeur et hauteur du personnage pour les collisions notamment
   player2.l =  8 -- largeur du joueur en pixels ou en tiles (ici 8 pixels) 
   player2.h =  8 -- hauteur du joueur en pixels ou en tiles (ici 8 pixels)
@@ -51,41 +50,40 @@ player2 = {}
   player2.saut = 8 -- hauteur du saut (valeur positive)
   player2.isgrounded = false -- interrupteur qui permet de savoir si le personnage touche le sol, false = le personnage ne touche pas le sol, true = le personnage touche le sol
   -- animations du personnage
-  player2.spr = 1-- sprite de base du joueur (ici le numero 1 de l'editeur de sprite )
   player2.god = false -- interrupteur qui flip le sprite sur l'axe vertical, si god = false alors le sprite apparaれなtra れき l'れたcran tel qu'il est dessinれた dans l'れたditeur de sptite, god = false il sera invers&
   player2.anim = "nothing"-- animation en cours d'utilisation
   player2.nothing =  {f=17,st=17,sz=1,var=0,spd=1/15}-- animation pour la marche
   player2.walk =  {f=18,st=18,sz=2,var=0,spd=1/8}-- animation pour la marche
-  player2.jump =  {f=20,st=21,sz=2,var=0,spd=1/8}-- animation pour le saut
+  player2.jump =  {f=20,st=20,sz=2,var=0,spd=1/8}-- animation pour le saut
   -- gestion du personnage (selon le gamplay)
   player2.life = 1 -- points de vie du personnage au debut du jeu
   player2.munitions = 1-- munitions du personnage
-  
+
+
   gravite = 0.5 -- valeur de gravitれた qui sera appliquれた en permanence au joueur, plus elle sera れたlevれたe et plus le joueur descendra vite vers le sol
   
   -- les tableaux ou variables ou fonctions nれたcessaires au lancement du programme
-  diamants = {}
+  boutons = {}
   enemis = {}
-  placer_des_diamants(1,0,31,0,31)
-  placer_des_enemis(2,0,31,0,31)
+  placer_des_boutons(1,0,31,0,31)
+  --placer_des_enemis(2,0,31,0,31)
   desintegration = {}
 
   -- lancement de la musique du jeu
-  music(0)
+  --music(0)
 end 
 
 
 function _update()
-  
   move_player() -- le dれたplacement de player
   move_player2() -- le dれたplacement de player2 --changement
+
   choix_animation_player() -- choix des animations de player
-  collision_player_diamants() -- gestion des collisions entre des diamants et player
-  update_enemis()
-  collision_player_enemis()
-
-  
-
+  collision_player_boutons(player) -- gestion des collisions entre des diamants et player
+  collision_player_boutons(player2)
+  update_boutons()
+  --update_enemis()
+ -- collision_player_enemis()
 end
 
 
@@ -95,66 +93,64 @@ function _draw() -- la fonction affichera les れたlれたments les uns sur les
   cls() -- nettoie l'れたcran, efface tout les れたlれたments affichれたs en dれたbut de cycle (rafraichissement)
   map() -- affiche la carte de l'れたditeur de carte de la tile 0,0 れき la tile 15,15 par dれたfaut
   
+  draw_boutons()
   --draw_player() -- fonction qui dessine le sprite de player
   draw_player_animation() -- fonction qui dessine et anime le sprite
-  draw_diamants()
-  draw_desintegration()
-  draw_enemis()
+  
+  --draw_desintegration()
+  --draw_enemis()
   -- gestion de la camera, toujours a la fin de _draw()
-  --update_camera_ecran() -- gere la camera et passe d'ecran れき ecran 
-  update_camera_joueur(128,128) -- gere la camera et place le joueur au milieu de l'れたcran 
-  draw_ui()
+  update_camera_ecran() -- gere la camera et passe d'ecran れき ecran 
+  --draw_ui()
 end 
 
-function arrete_le_deplacement(player) -- stoppe le dれたplacement --ch angement
-  if player.dx>0 then -- si le joueur va vers la droite
-    player.dx-=player.friction -- on baisse progressivement la vitesse
-  if player.dx<=0 then player.dx = 0 end -- pour arriver a zero
-  elseif player.dx<0 then -- si le joueur va vers la gauche
-    player.dx+=player.friction -- on ajoute a la vitesse pour
-    if player.dx>=0 then player.dx = 0 end -- la ramener a zero
+function arrete_le_deplacement(a) -- stoppe le dれたplacement
+  if a.dx>0 then -- si le joueur va vers la droite
+    a.dx-=a.friction -- on baisse progressivement la vitesse
+  if a.dx<=0 then a.dx = 0 end -- pour arriver a zero
+  elseif a.dx<0 then -- si le joueur va vers la gauche
+    a.dx+=a.friction -- on ajoute a la vitesse pour
+    if a.dx>=0 then a.dx = 0 end -- la ramener a zero
   end -- arrれちte de le dれたplacement en x
 end
 
 -- fontions pour un jeu de plateformes
 
---player1 --changement
 function move_player()
  
-  arrete_le_deplacement(player) --changement
+  arrete_le_deplacement(player) 
   
-  if btn(0) then 
+  if btn(0,0) then 
     player.dx = -player.vit -- lorsqu'on appuie sur la touche gauche du clavier on ajoute la vitesse au dれたplacement vers la gauche (en nれたgatif)
     player.god = true -- le sprite est dessinれた vers la droite donc quand on appuie vers la gauche il faut l'orienter vers la gauche
   end 
   
-  if btn(1) then 
+  if btn(1,0) then 
     player.dx = player.vit -- lorsqu'on appuie sur la touche droite du clavier on ajoute la vitesse au dれたplacement vers la droite (en positif)
     player.god = false -- le sprite est dessinれた vers la droite donc quand on appuie vers la droite il faut lui laisser cette orientation
   end 
   
-  if btn(4) and player.isgrounded then 
+  if btn(4,0) and player.isgrounded then 
     player.dy -= player.saut -- lorsqu'on appuie sur la touche c du clavier on ajoute la valeur du saut au dれたplacement vers le haut (en nれたgatif)
   end 
    collision_map(player) 
 end
 
---player2 --changement
 function move_player2()
  
   arrete_le_deplacement(player2) 
   
-  if btnp(0, 1) then 
+  if btn(0, 1) then 
     player2.dx = -player2.vit -- lorsqu'on appuie sur la touche gauche du clavier on ajoute la vitesse au dれたplacement vers la gauche (en nれたgatif)
     player2.god = true -- le sprite est dessinれた vers la droite donc quand on appuie vers la gauche il faut l'orienter vers la gauche
   end 
   
-  if btnp(1, 1) then 
+  if btn(1, 1) then 
     player2.dx = player2.vit -- lorsqu'on appuie sur la touche droite du clavier on ajoute la vitesse au dれたplacement vers la droite (en positif)
     player2.god = false -- le sprite est dessinれた vers la droite donc quand on appuie vers la droite il faut lui laisser cette orientation
   end 
   
-  if btnp(4, 1) and player2.isgrounded then 
+  if btn(4, 1) and player2.isgrounded then 
     player2.dy -= player2.saut -- lorsqu'on appuie sur la touche c du clavier on ajoute la valeur du saut au dれたplacement vers le haut (en nれたgatif)
   end 
    collision_map(player2) 
@@ -210,15 +206,6 @@ end
   end
 end 
 
-function draw_player() -- dessine juste le sprite sans animation 
-  spr(player.spr,player.x,player.y,player.l/8,player.h/8,player.god) 
-  spr(player2.spr,player2.x,player2.y,player2.l/8,player2.h/8,player2.god) --changement 
-  
-  -- fonction spr affiche les sprites de l'れたditeur pico 8 
-  -- pour les arguments de la fonction 
-  -- le numれたro du sprite, la position en x, la position en y, le nombre de tiles れき afficher en x, le nombre de tiles en y et le sens inversれた ou pas
-end
-
 -- animation 
 function animation(a,l)
   -- premier argument de la fonction : a (nom du tableau)
@@ -260,8 +247,7 @@ function choix_animation_player() -- fonction qui va determiner l'animation れ�
       player.anim = "nothing"
     end
   end
-
-  --changement
+    --changement
   if abs(player2.dy)!=0 then player2.anim = "jump" 
     else 
     if abs(player2.dx)!=0 then player2.anim = "walk"
@@ -366,14 +352,6 @@ function update_camera_ecran() -- la camera est fixe et bouge si player va sur u
   camy = flr(player.y/128)
   camera(camx*128,camy*128)
 end
-
-function update_camera_joueur(camx_max,camy_max) -- la camera suit toujours player
-  -- camx_max,camy_max : en pixel, la limite de la camera
-  camx=mid(0,flr(player.x-64),camx_max)
-  camy=mid(0,flr(player.y-64),camy_max)
-  camera(camx,camy)
-end
-
 
 --------------------------------------------------------------------------------------------
 -- faire des screenshakes 
@@ -633,36 +611,46 @@ end
 -- creer des objets a ramasser sur la map
 -- a declarer en _init() : objets={} -- ne pas oublier de creer le tableau
 
-function faire_un_diamant(x,y)
-  local diamant = {}
-    diamant.x = x 
-    diamant.y = y
-    diamant.l = 8 -- largeur 
-    diamant.h = 8 -- hauteur 
-    diamant.spr = 7 -- pour essayer avant de faire des animations
-    diamant.anim = "nothing"
-    diamant.nothing =  {f=7,st=7,sz=2,var=0,spd=1/8} -- frame en cours, frame de depart, taille de l'animation et vitesse  
-  add(diamants,diamant)
+function faire_un_bouton(x,y)
+  local bouton = {}
+    bouton.x = x 
+    bouton.y = y
+    bouton.l = 8 -- largeur 
+    bouton.h = 8 -- hauteur 
+    bouton.active = false
+    bouton.spr = 7 -- pour essayer avant de faire des animations
+  add(boutons,bouton)
 end
 
     
-function draw_diamants() -- a appeler en _draw()
-  for d in all(diamants) do 
-    spr(anim_objet(d),d.x,d.y,1,1) -- si on a fait des animations
+function draw_boutons() -- a appeler en _draw()
+  for b in all(boutons) do 
+    spr(b.spr,b.x,b.y) -- si on a fait des animations
     --spr(d.spr,d.x,d.y) -- si on veut juste le sprite
   end 
 end
+
+function update_boutons()
+  for b in all(boutons) do 
+    if b.active then 
+      b.spr = 8 
+    else
+      b.spr = 7
+    end
+  end
+end
+
 
 -- placer les objets sur la map
 -- flag : le numれたro du flag
 -- x_min,x_max : en tiles, la zone de la map sur laquelle la fonction va agir
 -- y_min,y_max : idem, en tiles
-function placer_des_diamants(flag,x_min,x_max,y_min,y_max) -- a appeler en _init() ou pas
+function placer_des_boutons(flag,x_min,x_max,y_min,y_max) -- a appeler en _init() ou pas
   for i = x_min, x_max do -- scan la map en x
     for j = y_min, y_max do -- scan la map en y
       local sprite = mget(i,j) -- regarde quel est le flag de la tiles en i,j
       if fget(sprite,flag) then -- si il correspond avec le flag demandれた alors
-        faire_un_diamant(i*8,j*8) -- on appel la fonction de crれたation de diamants
+        faire_un_bouton(i*8,j*8) -- on appel la fonction de crれたation de diamants
         mset(i,j,0) -- on remplace la tile par une tile vide ou autre chose si on veut
       end
     end
@@ -671,13 +659,17 @@ end
 
     
 -- player ramasse des diamants
-function collision_player_diamants()
-  for d in all(diamants) do 
-      if collision(player,d,1) then 
-        make_desintegration(d.x,d.y,d.l,d.h)
+function collision_player_boutons(p)
+  for b in all(boutons) do 
+    if not b.active then
+      if collision(p,b,1) then 
+        b.active = true
+        --make_desintegration(d.x,d.y,d.l,d.h)
         sfx(4) -- joue un son quand un diamant est touche
-        del(diamants,d)
+        
         -- on peut ajouter d'autres effets comme player.life+=1
       end
+    end
   end
 end 
+          
