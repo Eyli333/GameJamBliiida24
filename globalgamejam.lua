@@ -4,11 +4,20 @@
 -- cooperative la revanche
 -- code pour les ateliers creation de jeux video
 
-function _init()
+function _init() -- nouveau
+  game_state = "game" -- nouveau
+  boot()
+end
+
+function boot() -- nouveau
+timer_general = 0 -- nouveau
+
+game_state = "game" -- nouveau
+  wait_timer = 0 -- nouveau
   
 player = {}
   -- position sur l'れたcran
-  player.x = 64  -- position en x du joueur (ici au milieu de l'ecran)
+  player.x = 8  -- position en x du joueur (ici au milieu de l'ecran)
   player.y = 64  -- position en y du joueur (ici au milieu de l'ecran)
   -- largeur et hauteur du personnage pour les collisions notamment
   player.l =  8 -- largeur du joueur en pixels ou en tiles (ici 8 pixels) 
@@ -28,14 +37,16 @@ player = {}
   player.nothing =  {f=1,st=1,sz=1,var=0,spd=1/15}-- animation pour la marche
   player.walk =  {f=2,st=2,sz=2,var=0,spd=1/8}-- animation pour la marche
   player.jump =  {f=4,st=4,sz=2,var=0,spd=1/8}-- animation pour le saut
+  player.death =  {f=6,st=6,sz=1,var=0,spd=1/8}-- animation pour la mort
   -- gestion du personnage (selon le gamplay)
-  player.life = 1 -- points de vie du personnage au debut du jeu
-  player.munitions = 1-- munitions du personnage
-  
+  player.dead = false
+  player.btn_left = 0
+  player.btn_right = 0
+  player.btn_jump = 0
 --changement
 player2 = {}
   -- position sur l'れたcran
-  player2.x = 56  -- position en x du joueur (ici au milieu de l'ecran)
+  player2.x = 8  -- position en x du joueur (ici au milieu de l'ecran)
   player2.y = 8  -- position en y du joueur (ici au milieu de l'ecran)
   -- largeur et hauteur du personnage pour les collisions notamment
   player2.l =  8 -- largeur du joueur en pixels ou en tiles (ici 8 pixels) 
@@ -55,62 +66,105 @@ player2 = {}
   player2.nothing =  {f=17,st=17,sz=1,var=0,spd=1/15}-- animation pour la marche
   player2.walk =  {f=18,st=18,sz=2,var=0,spd=1/8}-- animation pour la marche
   player2.jump =  {f=20,st=20,sz=2,var=0,spd=1/8}-- animation pour le saut
+  player2.death =  {f=22,st=22,sz=1,var=0,spd=1/8}-- animation pour la mort
   -- gestion du personnage (selon le gamplay)
-  player2.life = 1 -- points de vie du personnage au debut du jeu
-  player2.munitions = 1-- munitions du personnage
+  player2.dead = false
+  player2.btn_left = 1
+  player2.btn_right = 1
+  player2.btn_jump = 1
 
 
   gravite = 0.5 -- valeur de gravitれた qui sera appliquれた en permanence au joueur, plus elle sera れたlevれたe et plus le joueur descendra vite vers le sol
   
   -- les tableaux ou variables ou fonctions nれたcessaires au lancement du programme
   boutons = {}
-  enemis = {}
-  placer_des_boutons(1,0,31,0,31)
-  --placer_des_enemis(2,0,31,0,31)
-
-  faire_un_bouton(14*8, 02*8, 1)
-
+  piques = {}
+  scie_circulaires = {} 
+  --placer_des_boutons(1,0,31,0,31)
+  faire_une_scie(48,48,1,true)
+  placer_des_piques(6,14,5)
   desintegration = {}
+  particules = {}
 
   -- lancement de la musique du jeu
   --music(0)
 end 
 
 
-function _update()
+function _update() -- nouveau 
+  timer_general+=1
+  if (timer_general>2999) timer_general=0
+    choix_animation_player(player) -- choix des animations de player
+   choix_animation_player(player2) -- nouveau
+  if (game_state == "game") update_game()
+  if (game_state == "gameover") update_gameover()
+end
+
+function update_game()
   move_player() -- le dれたplacement de player
   move_player2() -- le dれたplacement de player2 --changement
-
-  choix_animation_player() -- choix des animations de player
   collision_player_boutons(player) -- gestion des collisions entre des diamants et player
   collision_player_boutons(player2)
   update_boutons()
-  --update_enemis()
- -- collision_player_enemis()
-  for i, b in ipairs(boutons) do
-    if b.cooldown > 0 then
-      b.cooldown = b.cooldown - 1
-    end
+  collision_player_piques()
+  update_scies()
+end
+
+function update_gameover() -- nouveau 
+wait_timer+=1
+
+  if player.dead then 
+    player.dx = 0
+    player.dy+=1
+    make_particules(3,player.x+4,player.y+6,8)
+    collision_map(player)
+    if wait_timer>60 and btnp(4,0) then
+    gamestate="game"
+    wait_timer = 0
+    --camera()
+    boot()
+  end
+  end
+  if player2.dead then  
+    player2.dx = 0
+    player2.dy+=1
+    make_particules(3,player2.x+4,player2.y+6,8)
+    collision_map(player2)
+    if wait_timer>60 and btnp(4,1) then
+    gamestate="game"
+    wait_timer = 0
+    --camera()
+    boot()
+  end
+  end
+end
+
+function _draw() -- nouveau
+  cls() -- nettoie l'れたcran, efface tout les れたlれたments affichれたs en dれたbut de cycle (rafraichissement)
+  draw_game()
+  if wait_timer>30 then 
+    rectfill(0,63,127,71,0)
+    print("press c/🅾️ to start again",15,65,14)
   end
 end
 
 
-
-
-function _draw() -- la fonction affichera les れたlれたments les uns sur les autres en fonction de l'ordre d'れたcriture dans la fonction
-  cls() -- nettoie l'れたcran, efface tout les れたlれたments affichれたs en dれたbut de cycle (rafraichissement)
+function draw_game() -- la fonction affichera les れたlれたments les uns sur les autres en fonction de l'ordre d'れたcriture dans la fonction
   map() -- affiche la carte de l'れたditeur de carte de la tile 0,0 れき la tile 15,15 par dれたfaut
-  
   draw_boutons()
-  --draw_player() -- fonction qui dessine le sprite de player
-  draw_player_animation() -- fonction qui dessine et anime le sprite
   
   --draw_desintegration()
-  --draw_enemis()
-  -- gestion de la camera, toujours a la fin de _draw()
+  draw_piques()
+  draw_scie_circulaire()
   update_camera_ecran() -- gere la camera et passe d'ecran れき ecran 
+  draw_particules()
+  draw_player_animation() -- fonction qui dessine et anime le sprite
+  
   --draw_ui()
 end 
+
+
+
 
 function arrete_le_deplacement(a) -- stoppe le dれたplacement
   if a.dx>0 then -- si le joueur va vers la droite
@@ -128,17 +182,17 @@ function move_player()
  
   arrete_le_deplacement(player) 
   
-  if btn(0,0) then 
+  if btn(0,player.btn_left) then 
     player.dx = -player.vit -- lorsqu'on appuie sur la touche gauche du clavier on ajoute la vitesse au dれたplacement vers la gauche (en nれたgatif)
     player.god = true -- le sprite est dessinれた vers la droite donc quand on appuie vers la gauche il faut l'orienter vers la gauche
   end 
   
-  if btn(1,0) then 
+  if btn(1,player.btn_right) then 
     player.dx = player.vit -- lorsqu'on appuie sur la touche droite du clavier on ajoute la vitesse au dれたplacement vers la droite (en positif)
     player.god = false -- le sprite est dessinれた vers la droite donc quand on appuie vers la droite il faut lui laisser cette orientation
   end 
   
-  if btn(4,0) and player.isgrounded then 
+  if btn(4,player.btn_jump) and player.isgrounded then 
     player.dy -= player.saut -- lorsqu'on appuie sur la touche c du clavier on ajoute la valeur du saut au dれたplacement vers le haut (en nれたgatif)
   end 
    collision_map(player) 
@@ -148,17 +202,17 @@ function move_player2()
  
   arrete_le_deplacement(player2) 
   
-  if btn(0, 1) then 
+  if btn(0, player2.btn_left) then 
     player2.dx = -player2.vit -- lorsqu'on appuie sur la touche gauche du clavier on ajoute la vitesse au dれたplacement vers la gauche (en nれたgatif)
     player2.god = true -- le sprite est dessinれた vers la droite donc quand on appuie vers la gauche il faut l'orienter vers la gauche
   end 
   
-  if btn(1, 1) then 
+  if btn(1, player2.btn_right) then 
     player2.dx = player2.vit -- lorsqu'on appuie sur la touche droite du clavier on ajoute la vitesse au dれたplacement vers la droite (en positif)
     player2.god = false -- le sprite est dessinれた vers la droite donc quand on appuie vers la droite il faut lui laisser cette orientation
   end 
   
-  if btn(4, 1) and player2.isgrounded then 
+  if btn(4, player2.btn_jump) and player2.isgrounded then 
     player2.dy -= player2.saut -- lorsqu'on appuie sur la touche c du clavier on ajoute la valeur du saut au dれたplacement vers le haut (en nれたgatif)
   end 
    collision_map(player2) 
@@ -244,23 +298,20 @@ function anim_objet(a) -- fonction qui va determiner quelle animation choisir / 
     return animation(a.nothing,1)
   elseif (a.anim=="jump") then
     return animation(a.jump,1)
+  elseif (a.anim == "death") then  
+    return animation(a.death,1)
   end
 end
 
-function choix_animation_player() -- fonction qui va determiner l'animation れき choisir en fonction des actions du joueur 
-  if abs(player.dy)!=0 then player.anim = "jump" 
-    else 
-    if abs(player.dx)!=0 then player.anim = "walk"
+function choix_animation_player(a) -- nouveau 
+  if a.dead then a.anim = "death"  
     else
-      player.anim = "nothing"
-    end
-  end
-    --changement
-  if abs(player2.dy)!=0 then player2.anim = "jump" 
-    else 
-    if abs(player2.dx)!=0 then player2.anim = "walk"
-    else
-      player2.anim = "nothing"
+    if abs(a.dy)!=0 then a.anim = "jump" 
+      else 
+      if abs(a.dx)!=0 then a.anim = "walk"
+      else
+        a.anim = "nothing"
+      end
     end
   end
 end
@@ -284,6 +335,41 @@ function draw_ui() -- a appeler dans _draw() apres la gestion de la camera
   spr(7,100+camx,camy)
   print(": "..#diamants,112+camx,2+camy,9)
 end 
+
+
+function teleportation_players()
+  local x1 = player.x
+  local y1 = player.y
+  local x2 = player2.x
+  local y2 = player2.y
+  player.x = x2
+  player.y = y2
+  player2.x = x1
+  player2.y = y1
+end
+
+function inversion_controles(left,right,jump) -- true ou false
+  local p1_left = player.btn_left
+  local p1_right = player.btn_right
+  local p1_jump = player.btn_jump
+
+  local p2_left = player2.btn_left
+  local p2_right = player2.btn_right
+  local p2_jump = player2.btn_jump
+
+  if left then
+    player.btn_left = p2_left
+    player2.btn_left = p1_left
+  end
+  if right then
+    player.btn_right = p2_right
+    player2.btn_right = p1_right
+  end
+  if jump then
+    player.btn_jump = p2_jump
+    player2.btn_jump = p1_jump
+  end
+end
 
 
 
@@ -327,16 +413,16 @@ end
 --------------------------------------------------------------------------------------------
 -- faire des particules 
 -- en _init : particules = {}
-function make_particules(nb,x,y) -- a appeler pour faire des particules
+function make_particules(nb,x,y,col) -- a appeler pour faire des particules
   while(nb>0) do
     part = {}
       part.x = x
       part.y = y
-      part.col = 11 -- couleur des particules
+      part.col = col -- couleur des particules
       part.dx = rnd(2)-1 -- vitesse & direction en x comprise en -1 et 1
       part.dy = rnd(2)-1 -- idem pour y
       part.f = 0 -- frame de dれたpart de la particule
-      part.maxf = 30 -- frame de fin, utilisれたe pour dれたtruire la particule
+      part.maxf = 120 -- frame de fin, utilisれたe pour dれたtruire la particule
     add(particules,part)
     nb -= 1
   end
@@ -345,8 +431,15 @@ end
 function draw_particules()
   for part in all(particules) do
     pset(part.x,part.y,part.col)
-    part.x += part.dx
-    part.y += part.dy
+    
+    local collision_part_bas=mget(part.x/8,part.y/8)
+    if fget(collision_part_bas,0) then
+      part.dx = 0
+      part.dy = 0
+      part.f  = 0
+    end
+    part.x += 2*part.dx
+    part.y += 2*part.dy
     part.f += 1
     if(part.f>part.maxf) then
       del(particules,part)
@@ -435,52 +528,6 @@ function clignotement(s,x,y,h,l,god,col,vit)
 end
 
 
---------------------------------------------------------------------------------------------
--- faire de la pluie ou de la neige sur un ecran de jeu
--- a declarer en _init() : rain = {}
-  
-function make_rain(x,y)
-  local goutte = {}
-    goutte.x = x
-    goutte.y = y
-    goutte.l = 2 -- longueur de la goutte sur l'axe y
-    goutte.life = 70 -- duree de vie de la goutte
-    goutte.vit = rnd({4,5}) -- vitesse de chute de la goutte
-  add(rain,goutte)
-end
-
-function update_rain() -- a appeler dans _update()
-  local a = 2.5 -- frequence de la pluie (0 - 3.9)
-  local b = rnd({8,12,14,16,24}) -- densite de la pluie
-  for i = 0,130,b do -- cree des gouttes sur l'axe x, entre 0 et 130
-    if rnd(4)>=a then
-      make_rain(i,-10)
-    end
-  end
-  for r in all(rain) do -- fait tomber la pluie
-    r.y += r.vit -- chute de la pluie
-    r.x += rnd({-0.5,0,0.5}) -- deplace legerement les gouttes sur l'axe x
-    r.life -= 1
-    if r.life <=0  then
-      del(rain,r)
-    end
-    -- fait disparaitre la pluie si elle touche une tuile solide sur la map
-    local collision_verticale = mget(r.x/8,r.y/8)
-    if fget(collision_verticale,0) then
-      -- ici, il est possible d'ajouter des particules
-      del(rain,r)
-    end
-
-  end
-
-end
-
-function draw_rain() -- a appeler dans _draw()
-  for r in all(rain) do
-   pset(r.x,r.y,6)
-   pset(r.x,r.y+1,13)
- end
-end
 
 --------------------------------------------------------------------------------------------
 -- desintegrer un sprite
@@ -536,80 +583,123 @@ end
     
     
 -- les objets et ennemis du jeu
---------------------------------------------------------------------------------------------
----------------------- enemis --------------------------------------------------------------
-    
-function faire_un_enemi(x,y) -- fonction pour fabriquer un enemi
-  local enemi = {}
-    enemi.x = x  -- position en x
-    enemi.y = y -- position en y
-    enemi.dx = 0  -- direction en x 
-    enemi.dy = 0 -- direction en y 
-    enemi.isgrounded = false -- est ce qu'il est sur le sol?
-    enemi.saut = 8 -- hauteur du saut 
-    enemi.vit = rnd({1,2,0.5}) -- vitesse de deplacement ici au hazard en trois valeurs
-    enemi.bascule = rnd({30,60,90,120,150}) -- moment oれみ les enemis vont changer de direction ici au hazard entre 5 valeurs
-    enemi.god = false -- voir player
-    enemi.timer = 0 -- timer interne a chaque enemi pour declencher des trucs
-    enemi.l = 8 -- largeur de l'objet
-    enemi.h = 8 -- hauteur de l'objet
-    enemi.spr = 32 -- pour essayer avant de faire des animations
-    enemi.anim = "walk" -- animation 
-    enemi.walk =  {f=32,st=32,sz=2,var=0,spd=1/8} -- frame en cours, frame de depart, taille de l'animation et vitesse  
-  add(enemis,enemi)
+
+function faire_une_scie(pos_x, pos_y, vitesse, boolean_horizontal)
+  local scie_circulaire = {}
+      scie_circulaire.x = pos_x  -- position en x au dれたbut de son animation
+      scie_circulaire.y = pos_y -- position en y  au dれたbut de son animation
+      scie_circulaire.vit = vitesse -- vitesse de deplacement ici au hazard en trois valeurs
+      scie_circulaire.god = false -- voir player
+      scie_circulaire.boolean_horizontal = boolean_horizontal
+      scie_circulaire.timer = 0 -- timer interne a chaque enemi pour declencher des trucs
+      scie_circulaire.l = 8 -- largeur de l'objet
+      scie_circulaire.h = 8 -- hauteur de l'objet
+      scie_circulaire.anim = "walk" -- animation
+      scie_circulaire.walk =  {f=24,st=24,sz=2,var=0,spd=1/8} -- frame en cours, frame de depart, taille de l'animation et vitesse
+    add(scie_circulaires,scie_circulaire)
 end
-    
--- placer les enemis sur la map
--- flag : le numれたro du flag
--- x_min,x_max : en tiles, la zone de la map sur laquelle la fonction va agir
--- y_min,y_max : idem, en tiles
-function placer_des_enemis(flag,x_min,x_max,y_min,y_max) -- a appeler en _init() ou pas
-  for i = x_min, x_max do -- scan la map en x
-    for j = y_min, y_max do -- scan la map en y
-      local sprite = mget(i,j) -- regarde quel est le flag de la tiles en i,j
-      if fget(sprite,flag) then -- si il correspond avec le flag demandれた alors
-        faire_un_enemi(i*8,j*8) -- on appel la fonction de crれたation d'objet
-        mset(i,j,0) -- on remplace la tile par une tile vide ou autre chose si on veut
-      end
-    end
+
+function draw_scie_circulaire()
+  for s in all(scie_circulaires) do
+    spr(anim_objet(s),s.x,s.y,1,1,s.god)
   end
 end
 
-    
-function update_enemis() -- 
-  for e in all(enemis) do 
-    if e.dx>0 then e.god = false 
-    elseif e.dx<=0 then e.god = true
+function update_scies()
+  for s in all(scie_circulaires) do
+
+    if s.boolean_horizontal == true then
+      local right_flag = fget(mget(flr((s.x+s.l)/8),flr(s.y/8)),0)
+      if right_flag == true then s.god=true end
+      local left_flag = fget(mget(flr((s.x-s.vit)/8),flr(s.y/8)),0)
+      if left_flag == true then s.god=false end
+
+      if s.god == false then
+        s.x+=s.vit
+      elseif s.god == true then
+        s.x-=s.vit
+      end
+    elseif s.boolean_horizontal == false then
+      local up_flag = fget(mget(flr(s.x/8),flr((s.y-s.vit)/8)),0)
+      if up_flag == true then s.god=true end
+      local down_flag = fget(mget(flr(s.x/8),flr((s.y+s.h)/8)),0)
+      if down_flag == true then s.god=false end
+
+      if s.god == false then
+        s.y-=s.vit
+      elseif s.god == true then
+        s.y+=s.vit
+      end
     end
-    e.timer+=1
-    e.dx=e.vit
-    if e.isgrounded then e.dy -= e.saut end
-    if e.timer%e.bascule == 0 then e.vit = - e.vit end
-    if e.timer>599 then e.timer = 0 end
-    collision_map(e) 
+    if collision(player,s,1) then
+      make_desintegration(s.x,s.y,s.l,s.h)
+       player.dead = true
+      game_state = "gameover"
+     -- sfx(6) -- joue un son quand un enemi est touche
+    end
+    if collision(player2,s,1) then
+      make_desintegration(s.x,s.y,s.l,s.h)
+       player2.dead = true
+      game_state = "gameover"
+     -- sfx(6) -- joue un son quand un enemi est touche
+    end
+
   end
-  
+
 end
+
+
+
+
+
+--------------------------------------------------------------------------------------------
+---------------------- pique --------------------------------------------------------------
     
-function draw_enemis()
-  for e in all(enemis) do 
-    spr(anim_objet(e),e.x,e.y,1,1,e.god) -- si on a fait des animations
+function faire_un_pique(x,y) -- fonction pour fabriquer un enemi
+  local pique = {}
+    pique.x = x  -- position en x
+    pique.y = y -- position en y
+    pique.l = 8 -- largeur de l'objet
+    pique.h = 8 -- hauteur de l'objet
+    pique.flip = false
+    pique.anim = "walk" -- animation 
+    pique.walk =  {f=32,st=32,sz=2,var=0,spd=1/4} -- frame en cours, frame de depart, taille de l'animation et vitesse  
+  add(piques,pique)
+end
+
+function placer_des_piques(x,y,nb) -- coordonnれたes de la tiles
+  local a = 0 
+    for i=1,nb do
+      faire_un_pique((x+a)*8,y*8)
+      mset(x+a,y,0)
+      a+=1
+    end
+  end
+
+        
+function draw_piques()
+  for p in all(piques) do 
+    spr(anim_objet(p),p.x,p.y) -- si on a fait des animations
     --spr(o.spr,o.x,o.y) -- si on veut juste le sprite
   end
 end
 
--- player eclate les enemis mais ...............
-function collision_player_enemis()
-  for e in all(enemis) do 
-      if collision(player,e,1) then 
-        make_desintegration(e.x,e.y,e.l,e.h)
-        sfx(6) -- joue un son quand un enemi est touche
-        del(enemis,e) -- enleve cet enemi du tableau enemi
-        faire_un_enemi(rnd(128),rnd(128))sfx(5) -- ajoute 1 enemi
-        faire_un_enemi(rnd(128),rnd(128))sfx(5) -- ajoute 1 enemi
-        faire_un_enemi(rnd(128),rnd(128))sfx(5) -- ajoute 1 enemi
-        -- on peut ajouter d'autres effets comme player.life-=1
-      end
+function collision_player_piques()
+  for p in all(piques) do 
+    if collision(player,p,2) then 
+      player.dead = true
+      game_state = "gameover"
+
+      --make_desintegration(player.x,player.y,player.l,player.h)
+      --sfx(6) -- joue un son quand un enemi est touche
+    end
+    if collision(player2,p,2) then 
+      player2.dead = true
+      game_state = "gameover"
+
+      --make_desintegration(player2.x,player2.y,player2.l,player2.h)
+      --sfx(6) -- joue un son quand un enemi est touche
+    end
   end
 end 
 
@@ -619,7 +709,8 @@ end
 -- creer des objets a ramasser sur la map
 -- a declarer en _init() : objets={} -- ne pas oublier de creer le tableau
 
-function faire_un_bouton(x, y, id)
+
+function faire_un_bouton(x,y,id)
   local bouton = {}
     bouton.id = id
     bouton.x = x 
@@ -628,7 +719,6 @@ function faire_un_bouton(x, y, id)
     bouton.h = 8 -- hauteur 
     bouton.active = false
     bouton.spr = 7 -- pour essayer avant de faire des animations
-    bouton.cooldown = 0
   add(boutons,bouton)
 end
 
@@ -651,44 +741,35 @@ function update_boutons()
   end
 end
 
-
 function update_action_bouton(b)
+  --=======lvl 1 =======--
   if (b.id == 1) then
-    faire_un_bouton(14*8, 11*8, 2)
-    collision_player_boutons(player)
-    bouton_cooldown(1, b)
-  end
-  if (b.id == 2) then
-    collision_player_boutons(player)
-    bouton_cooldown(1, b)
-  end
-end
-
-function bouton_cooldown(time, b) --time en secondes, b = bouton 
-  if b.cooldown <= 0 then
-    b.cooldown =  time * 30
-    b.active = false    
-  end
-end
-
--- placer les objets sur la map
--- flag : le numれたro du flag
--- x_min,x_max : en tiles, la zone de la map sur laquelle la fonction va agir
--- y_min,y_max : idem, en tiles
-function placer_des_boutons(flag,x_min,x_max,y_min,y_max) -- a appeler en _init() ou pas
-  for i = x_min, x_max do -- scan la map en x
-    for j = y_min, y_max do -- scan la map en y
-      local sprite = mget(i,j) -- regarde quel est le flag de la tiles en i,j
-      if fget(sprite,flag) then -- si il correspond avec le flag demandれた alors
-        faire_un_bouton(i*8,j*8) -- on appel la fonction de crれたation de diamants
-        mset(i,j,0) -- on remplace la tile par une tile vide ou autre chose si on veut
-      end
+    if not button_exists(2) then 
+      faire_un_bouton(148, 118, 2)
+      collision_player_boutons(player)
+      bouton_cooldown(1, b)
     end
   end
+  if (b.id == 2) then
+    placer_des_piques(6, 6, 2)
+    placer_des_piques(6, 14, 2)
+
+    collision_player_boutons(player)
+    bouton_cooldown(1, b)
+  end
 end
 
+function button_exists(id) --return true if button wit this id exists
+  for b in all(boutons) do 
+    if b.id == id then
+      return true
+    end
+  end
+  return false
+end
+
+
     
--- player ramasse des diamants
 function collision_player_boutons(p)
   for b in all(boutons) do 
     if not b.active then
