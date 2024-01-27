@@ -80,7 +80,6 @@ player2 = {}
   boutons = {}
   piques = {}
   scie_circulaires = {} 
-  --placer_des_boutons(1,0,31,0,31)
   faire_une_scie(48,48,1,true)
   placer_des_piques(6,14,5)
   desintegration = {}
@@ -747,7 +746,6 @@ function update_action_bouton(b)
     if not button_exists(2) then 
       faire_un_bouton(148, 118, 2)
       collision_player_boutons(player)
-      bouton_cooldown(1, b)
     end
   end
   if (b.id == 2) then
@@ -755,7 +753,6 @@ function update_action_bouton(b)
     placer_des_piques(6, 14, 2)
 
     collision_player_boutons(player)
-    bouton_cooldown(1, b)
   end
 end
 
