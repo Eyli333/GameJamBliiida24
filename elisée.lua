@@ -350,14 +350,21 @@ function spawn_level()
   elseif level == 4 then
     player.x = 17*8*(level-1) -2*8 --deux bloc plus à gauche que d'habitude
     player.y = 6*8
+    -- player.x = 59*8
+    -- player.y = 4*8
     player2.x = 17*8*(level-1) -2*8 --deux bloc plus à gauche que d'habitude
     player2.y = 14*8
-    faire_un_bouton(51,03,2001)
-    faire_un_bouton(51,08,2002)
+    -- player2.x = 55*8 --deux bloc plus à gauche que d'habitude
+    -- player2.y = 04*8
+    faire_un_bouton(50,04,2001)
+    faire_un_bouton(51,10,2002)
     faire_un_bouton(55,02,2003)
-    faire_un_bouton(60,03,2004) -- arguments : x,y,id
-    faire_un_bouton(54,10,2005) -- arguments : x,y,id
-    faire_un_bouton(60,06,2006) -- arguments : x,y,id
+    faire_un_bouton(60,05,2004) -- arguments : x,y,id
+    faire_un_bouton(53,14,2005) -- arguments : x,y,id
+    faire_un_bouton(61,08,2006) -- arguments : x,y,id
+    faire_un_bouton(62,07,2007) -- arguments : x,y,id
+    placer_des_piques(58,10,1)
+    placer_des_piques(56,12,1)
   end
 end
 
@@ -1065,6 +1072,11 @@ function update_action_bouton(b)
     if not b.input then  
       faire_un_bouton(17,4,2005)
       faire_une_scie(53,08,1,2)
+    end
+  end
+  if (b.id == 2004) then
+    if not b.input then  
+      mettredudecor(0, 54, 06, 1, 'h')
       
       -- open_porte_player1()
       -- open_porte_player2()
@@ -1073,7 +1085,14 @@ function update_action_bouton(b)
   
   if (b.id == 2006) then
     if not b.input then  
+      mettredudecor(0, 62, 14, 1, "h")
+      placer_des_piques(62, 14, 1)
       open_porte_player1()
+    end
+  end
+  if (b.id == 2007) then
+    if not b.input then  
+      open_porte_player2()
     end
   end
 end
