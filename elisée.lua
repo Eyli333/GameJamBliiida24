@@ -353,9 +353,11 @@ function spawn_level()
     player2.x = 17*8*(level-1) -2*8 --deux bloc plus à gauche que d'habitude
     player2.y = 14*8
     faire_un_bouton(51,03,2001)
-    faire_un_bouton(55,02,2003)
     faire_un_bouton(51,08,2002)
-    -- faire_un_bouton(30,3,302) -- arguments : x,y,id
+    faire_un_bouton(55,02,2003)
+    faire_un_bouton(60,03,2004) -- arguments : x,y,id
+    faire_un_bouton(54,10,2005) -- arguments : x,y,id
+    faire_un_bouton(60,06,2006) -- arguments : x,y,id
   end
 end
 
@@ -452,9 +454,10 @@ function collision_map(a)
   a.y += a.dy -- on ajoute la valeur dy au deplacement en y du joueur 
 
   local vertical_collision = mget((a.x+4)/8,(a.y+8)/8) -- verifie la tile en dessous de player
-
+--+2 & +6 doubler
     a.isgrounded = false -- de base player n'est pas au sol
 
+    --or fget position 2
   if a.dy >= 0 then -- si player est en chute libre (y positif)
     if fget(vertical_collision,0) then -- si la tile est solide en dessous de player
     a.y = flr((a.y)/8)*8 -- on remet player en haut de la tiles
@@ -1028,7 +1031,7 @@ function update_action_bouton(b)
       faire_une_scie(53,07,1,1)
       faire_une_scie(40,08,1,3)
       faire_une_scie(40,10,1,3)
-      placer_des_piques(42,06,2)
+      placer_des_piques(43,06,1)
       changementDesCommandes = true
     end
   end
@@ -1040,8 +1043,6 @@ function update_action_bouton(b)
       open_porte_player2()
     end
   end
-  faire_un_bouton(55,02,2003)
-  faire_un_bouton(51,08,2002)
   --=======lvl Élisée Elisee 2=======--
   if (b.id == 2001) then
     if not b.input then 
@@ -1058,7 +1059,6 @@ function update_action_bouton(b)
   if (b.id == 2002) then
     if not b.input then  
       faire_une_scie(53,08,1,2)
-
     end
   end
   if (b.id == 2003) then
@@ -1068,6 +1068,12 @@ function update_action_bouton(b)
       
       -- open_porte_player1()
       -- open_porte_player2()
+    end
+  end
+  
+  if (b.id == 2006) then
+    if not b.input then  
+      open_porte_player1()
     end
   end
 end
